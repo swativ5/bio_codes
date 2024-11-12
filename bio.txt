@@ -1,0 +1,205 @@
+1. Classification of Biomolecules
+def classify_sequence(sequence):
+    sequence = sequence.upper().strip() 
+    nucleotides = set("ACGTU")
+    peptides = set("ACDEFGHIKLMNPQRSTVWY")  
+    if set(sequence).issubset(nucleotides):
+        return "Nucleotide"
+    elif set(sequence).issubset(peptides):
+        return "Peptide"
+    else:
+        return "Unknown or Mixed Sequence"
+user_sequence = input("Please enter a sequence to classify (DNA/RNA or Protein): ")
+classification = classify_sequence(user_sequence)
+print(f"Classification of the sequence: {classification}")
+
+2. Python program to download sequences from Nucleotide Database
+from Bio import Entrez
+Entrez.email = "vasavi.cs@gmail.com"
+search_results = Entrez.read(Entrez.esearch(db="nucleotide", retmax=10, term="pancreatic cancer[Title] AND Homo sapiens[Organism]"))
+IDs = search_results["IdList"]
+print("Retrieved IDs:", IDs)
+with open("pancreatic_cancer_sequences.txt", "w") as output_file:
+    for ID in IDs:
+        try:
+            sequence = Entrez.efetch(db="nucleotide", id=ID, rettype="fasta", retmode="text").read()
+            output_file.write(sequence + "\n")
+        except Exception as e:
+	        print(f"An error occurred with ID {ID}: {e}")
+print("Sequence retrieval and file writing complete.")
+
+3. SMILES TO PNG (with Atom numbers)
+from rdkit import Chem
+from rdkit.Chem import Draw
+caffeine_smiles = 'CN1C=NC2=C1C(=O)N(C(=O)N2C)C'
+mol = Chem.MolFromSmiles(caffeine_smiles)
+Draw.MolToFile(mol, 'caffeine.png')
+for atom in mol.GetAtoms():
+    atom.SetProp("molAtomMapNumber", str(atom.GetIdx()))
+Draw.MolToFile(mol, 'caffeine_with_prop.png')
+
+4. SMILES TO PDB (with Hydrogen)
+from rdkit import Chem
+from rdkit.Chem import AllChem
+from rdkit.Chem import PDBWriter
+smiles = 'NC(=O)C1(CCN(CCCN2C3=C(CCC4=C2C=C(Cl)C=C4)C=CC=C3)CC1)N1CCCCC1'
+m = Chem.MolFromSmiles(smiles)
+m = Chem.AddHs(m)
+AllChem.EmbedMolecule(m)
+output_file = 'output_Hyd.pdb'
+with PDBWriter(output_file) as writer:
+    writer.write(m)
+
+5. SMILES to Morgan fingerprint
+from rdkit import Chem
+from rdkit.Chem import AllChem
+smiles = "CCO"
+mol = Chem.MolFromSmiles(smiles)
+fp = AllChem.GetMorganFingerprintAsBitVect(mol,2)
+print(f"Fingerprint: {fp}")
+
+6. Descriptors from SMILES
+from rdkit import Chem
+from rdkit.Chem import Draw, Descriptors 
+from PIL import Image
+smiles = 'NC(=O)C1(CCN(CCCN2C3=C(CCC4=C2C=C(CL)C=C4)C=CC=C3)CC1)N1CCCCC1' 
+molecule = Chem.MolFromSmiles(smiles)
+img = Draw.MolToImage(molecule, size=(400, 200))
+output_file = 'output.png' img.save(output_file)
+descriptors = {
+	'Molecular Weight': Descriptors.Molwt(molecule), 
+	'NumAtoms': Descriptors.HeavyAtomCount (molecule), 
+	'LogP': Descriptors.MolLogP (molecule),
+	'NumHAcceptors': Descriptors.NumHAcceptors (molecule), 
+	'NumHDonors': Descriptors.NumHDonors (molecule),
+}
+print("Molecular Descriptors: ")
+for key, value in descriptors.items(): 
+	print(f"{key}: {value}")
+
+7. Desciptors from SMILES (atoms, aromaticity-as file)
+from rdkit import Chem 
+import pandas as pd
+caffeine_smiles = 'CN1C-NC2=C1C(=0)N(C(=0)N2C)C'
+mol Chem.MolFromSmiles (caffeine_smiles)
+df = pd.DataFrame({
+	'Atom Index': [atom.GetIdx() for atom in mol.GetAtoms()],
+	'Atomic Number': [atom.GetAtomicNum() for atom in mol.GetAtoms()], 
+	'Is Aromatic': [atom.GetIsAromatic() for atom in mol.GetAtoms()], 
+	'Atomic Symbol': [atom.GetSymbol() for atom in mol.GetAtoms()]
+
+})
+df.to_excel('caffeine_atoms.xlsx', index=False)
+
+8. SMILES TO Morgan fingerprint (integer conversion)
+from rdkit import Chem
+from rdkit.Chem import AllChem
+from rdkit. Chem import DataStructs
+smiles = "CCO"
+mol Chem.MolFromSmiles (smiles)
+fp = AllChem.GetMorgan FingerprintAsBitVect(mol, 2)
+fp_list = DataStructs.BitVectToText(fp)
+print(f"Fingerprint: {fp_list}")
+
+9. Finding motifs using regular expression
+import re
+seq = "ATGCGATCGACGCTAGCGATCGCGATCGAGCGATCGCTAGCGATCGATCGCGATCG"
+motif="CGA"
+pattern = re.compile(motif)
+matches = pattern.finditer(seq)
+for match in matches:
+	print(match.start(), match.end())
+
+10. Finding motifs using biopython
+from Bio.Seq import Seq 
+from Bio import SeqUtils
+pattern = Seq("ACG")
+sequence = Seq("ATGCGCGACGGCGTGATCAGCTTATAGCCGTACGACTGCTGCAACGTGACTGAT")
+results = SeqUtils.nt_search(str(sequence), pattern)
+positions = results [1:]
+results_with_indices = [(pos, pos + len(pattern)) for pos in positions] print(results_with_indices)
+
+11. Frequency of motifs using biopython
+from Bio.Seq import Seq
+sequence = Seq("ATGCGCGACGGCGTGATCAGCTTATAGCCGTACGACTGCTGCAACGTGACTGAT") 
+motif = "ACG"
+sequence_length = len(sequence)
+motif_count = sequence.count(motif)
+motif_frequency = motif_count / sequence_length
+print(f" Sequence length: {sequence_length}")
+print(f"Motif '{motif}' appears {motif_count} times in the sequence.") print(f"Motif frequency: {motif_frequency:.4f}")
+
+12. Chaos Game representation
+import matplotlib.pyplot as plt
+corners = {'A': (0, 0),
+	'T': (1, 0),
+	'C': (0, 1),
+	'G': (1, 1)}
+def midpoint(p1, p2):
+	return ((p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2)
+def plot_dna_sequence (sequence):
+	center= (0, 0)
+	current_point = midpoint (center, corners[sequence[@]])
+	x_points = [current_point[0]] 
+	y_points = [current_point[1]]
+	for nucleotide in sequence[1:]:
+		current_point = midpoint(current_point, corners[nucleotide]) 				x_points.append(current_point[0])
+		y_points.append(current_point[1])
+	plt.figure(figsize=(6, 6))
+	plt.plot(x_points, y points, marker='o', color='blue', linestyle='-',markersize=5)
+	plt.plot([0, 1, 1, 0, 0], [0, 0, 1, 1, 0], color='black')
+	for nucleotide, coord in corners.items():
+		plt.text(coord[0], coord[1], nucleotide, fontsize=12, ha='center', va='center', color='red')
+	plt.title(f"DNA Sequence Plot for '[sequence]'")
+	plt.xlim(-0.1, 1.1)
+	plt.ylim(-0.1, 1.1)
+	plt.grid(True)
+	plt.xlabel("x-axis")
+	plt.ylabel("Y-axis")
+	plt.gca().set_aspect('equal')
+	plt.show()
+dna_sequence = "TACAGA"
+plot_dna_sequence(dna_sequence)
+
+13. Chaos Game representation 2
+import matplotlib.pyplot as plt
+def chaos_game_representation (sequence):
+	corners = {
+	"A": (-1, 1),
+	"T": (1, -1),
+	"G": (1, 1),
+	"C": (-1, -1)
+	}
+	x, y = 0, 0
+	x_vals = []
+	y_vals = []
+	for nucleotide in sequence:
+		corner_x, corner_y= corners.get(nucleotide, (0, 0)) 
+		x = (x + corner_x) / 2
+		y = (y+ corner_y) / 2
+		x_vals.append(x)
+		y_vals.append(y)
+	plt.figure(figsize=(6, 6))
+	plt.plot(x_vals, y_vals, 'o', markersize=1, color='blue')
+	plt.title("Chaos Game Representation with Custom Coordinates") plt.xlabel("X")
+	plt.ylabel("Y")
+	plt.axhline(0, color='black', linewidth=0.5)
+	plt.axvline(0, color='black', linewidth=0.5)
+	plt.grid(color = 'gray', linestyle = '--', linewidth = 0.5) plt.show()
+sequence = "ATCGATCGATCG"
+chaos game representation(sequence)
+
+14. Finding kmers
+from Bio.Seq import Seq
+from collections import Counter
+def find_kmers(sequence, k):
+	sequence = Seq(sequence) if not isinstance(sequence,Seq) else Sequence
+	kmers = [str(sequence[i:i+k] for i in range(len(sequence) -k + 1)]
+	kmer_counts = Counter(kmers)
+	return kmer_counts
+sequence = "ATCGATCGA"
+k = 3
+kmer_counts = find_kmers(sequence, k)
+print(f"k-mers of length {k} in sequence {sequence}:")
+for kmer, count in kmer_counts.items():
+	print(f"{kmer}: {count}")
